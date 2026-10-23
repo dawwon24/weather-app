@@ -92,10 +92,10 @@ async function main() {
     configFile: path.join(root, 'vite.config.ts'),
     logLevel: 'error',
     clearScreen: false,
-    server: { port: 5173, strictPort: false, open: false },
+    server: { open: false }, // port comes from vite.config.ts
   });
   await server.listen();
-  const url = server.resolvedUrls?.local[0] ?? 'http://localhost:5173/';
+  const url = server.resolvedUrls?.local[0] ?? 'http://localhost:5192/';
   writeFileSync(lockFile, JSON.stringify({ pid: process.pid, url }));
   log('server started at', url);
 

@@ -1,13 +1,12 @@
 import type { Place } from './data/korea-cities';
 import { KOREA_CITIES } from './data/korea-cities';
 
-export type Tab = 'forecast' | 'compare' | 'korea';
+export type RangeId = '2w' | '1m' | '3m';
 
 export interface Settings {
   place: Place;
   favorites: Place[];
-  tab: Tab;
-  forecastCharts: string[] | null; // null = defaults
+  range: RangeId;
   theme: 'auto' | 'light' | 'dark';
 }
 
@@ -17,8 +16,7 @@ const seoul = KOREA_CITIES[0];
 const defaults: Settings = {
   place: { name: seoul.name, detail: seoul.detail, lat: seoul.lat, lon: seoul.lon },
   favorites: [],
-  tab: 'forecast',
-  forecastCharts: null,
+  range: '2w',
   theme: 'auto',
 };
 
@@ -26,7 +24,11 @@ function load(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return { ...defaults };
-    return { ...defaults, ...JSON.parse(raw) };
+    // Keys from older versions (tab, forecastCharts) are simply ignored.
+    const saved = JSON.parse(raw);
+    const s = { ...defaults, ...saved };
+    if (!['2w', '1m', '3m'].includes(s.range)) s.range = defaults.range;
+    return s;
   } catch {
     return { ...defaults };
   }

@@ -1,6 +1,7 @@
-// Windowless launcher: starts the Vite server in-process, opens the app in its own
-// browser window (Chrome/Edge "app" mode with a dedicated profile), and shuts the
-// server down as soon as that window is closed.
+// Windowless launcher: starts the Vite server in-process, opens the app as a new tab
+// in the user's regular Chrome, and shuts the server down once no weather tab has
+// been open for a while (a tab close can't be observed directly, so it watches the
+// open pages' dev-server websocket connections instead).
 //
 // Started hidden by "날씨앱 실행.vbs" — there is no console, so problems go to
 // launcher.log and a message box.
@@ -13,8 +14,12 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const logFile = path.join(root, 'launcher', 'launcher.log');
 const dataDir = path.join(process.env.LOCALAPPDATA ?? root, 'weather-app');
-const profileDir = path.join(dataDir, 'browser-profile');
 const lockFile = path.join(dataDir, 'running.json');
+
+/** Shut down after this long with no weather tab connected. */
+const IDLE_MS = 90_000;
+/** Allow Chrome this long to start and load the page before the idle clock applies. */
+const STARTUP_GRACE_MS = 3 * 60_000;
 
 writeFileSync(logFile, '');
 const log = (...args) => writeFileSync(logFile, `[${new Date().toLocaleString()}] ${args.join(' ')}\n`, { flag: 'a' });
@@ -28,7 +33,7 @@ function messageBox(text) {
   }).unref();
 }
 
-function findBrowser() {
+function findChrome() {
   const pf = process.env.ProgramFiles ?? 'C:\\Program Files';
   const pf86 = process.env['ProgramFiles(x86)'] ?? 'C:\\Program Files (x86)';
   const local = process.env.LOCALAPPDATA ?? '';
@@ -36,8 +41,6 @@ function findBrowser() {
     `${pf}\\Google\\Chrome\\Application\\chrome.exe`,
     `${pf86}\\Google\\Chrome\\Application\\chrome.exe`,
     `${local}\\Google\\Chrome\\Application\\chrome.exe`,
-    `${pf86}\\Microsoft\\Edge\\Application\\msedge.exe`,
-    `${pf}\\Microsoft\\Edge\\Application\\msedge.exe`,
   ].find((p) => existsSync(p));
 }
 
@@ -50,31 +53,32 @@ function isAlive(pid) {
   }
 }
 
-function openWindow(browser, url) {
-  return spawn(
-    browser,
-    [`--app=${url}`, `--user-data-dir=${profileDir}`, '--no-first-run', '--no-default-browser-check', '--window-size=1280,900'],
-    { stdio: 'ignore', windowsHide: false },
-  );
+/** New tab in the user's normal Chrome (or a new window if Chrome isn't running yet). */
+function openTab(chrome, url) {
+  const p = chrome
+    ? spawn(chrome, [url], { detached: true, stdio: 'ignore' })
+    : spawn('cmd.exe', ['/c', 'start', '""', url], { detached: true, stdio: 'ignore', windowsHide: true });
+  p.on('error', (e) => {
+    log('open failed:', e.message);
+    messageBox(`크롬을 열지 못했어요: ${e.message}
+
+브라우저에서 ${url} 을 직접 열어 주세요.`);
+  });
+  p.unref();
 }
 
 async function main() {
   mkdirSync(dataDir, { recursive: true });
-  const browser = findBrowser();
-  if (!browser) {
-    messageBox('Chrome 또는 Edge 브라우저를 찾지 못했어요. 둘 중 하나를 설치한 뒤 다시 실행해 주세요.');
-    log('no browser found');
-    return;
-  }
+  const chrome = findChrome();
+  if (!chrome) log('chrome not found, using the default browser');
 
-  // Already running? Open another window in the existing instance and leave.
-  // (The same profile hands the window to the running browser, which keeps its server.)
+  // Already running? Just open another tab on the existing server.
   if (existsSync(lockFile)) {
     try {
       const { pid, url } = JSON.parse(readFileSync(lockFile, 'utf8'));
       if (isAlive(pid)) {
         log('already running at', url);
-        openWindow(browser, url).unref();
+        openTab(chrome, url);
         return;
       }
     } catch {
@@ -108,38 +112,21 @@ async function main() {
     }
   };
 
-  const child = openWindow(browser, url);
-  const openedAt = Date.now();
-  child.on('error', (e) => {
-    messageBox(`브라우저를 열지 못했어요: ${e.message}`);
-    shutdown('browser spawn error');
-  });
-  child.on('exit', (code) => {
-    // A quick exit means the profile was handed to a browser that was already open
-    // (e.g. left over from a crash). Its window still needs the server, so keep
-    // serving until that browser process is gone.
-    if (Date.now() - openedAt < 5000) {
-      log('browser handed off (exit code', code, '), watching profile processes');
-      watchProfile(() => shutdown('handed-off browser closed'));
-    } else {
-      shutdown('window closed');
-    }
-  });
-}
+  openTab(chrome, url);
 
-/** Poll for any browser process still using our dedicated profile. */
-function watchProfile(onGone) {
-  const ps = `Get-CimInstance Win32_Process -Filter "Name='chrome.exe' OR Name='msedge.exe'" | Where-Object { $_.CommandLine -like '*${profileDir.replace(/'/g, "''")}*' } | Measure-Object | Select-Object -ExpandProperty Count`;
-  const check = () => {
-    const p = spawn('powershell.exe', ['-NoProfile', '-Command', ps], { windowsHide: true });
-    let out = '';
-    p.stdout.on('data', (d) => (out += d));
-    p.on('exit', () => {
-      if (Number(out.trim()) > 0) setTimeout(check, 3000);
-      else onGone();
-    });
-  };
-  setTimeout(check, 3000);
+  // Every open weather tab keeps a websocket to the dev server; when none has been
+  // connected for IDLE_MS (and the startup grace has passed), all tabs are closed.
+  const startedAt = Date.now();
+  let lastSeen = startedAt;
+  let lastCount = 0;
+  setInterval(() => {
+    const now = Date.now();
+    const count = server.ws.clients.size;
+    if (count !== lastCount) log('open tabs:', count);
+    lastCount = count;
+    if (count > 0) lastSeen = now;
+    else if (now - startedAt > STARTUP_GRACE_MS && now - lastSeen > IDLE_MS) shutdown('no open tabs');
+  }, 10_000);
 }
 
 main().catch((e) => {

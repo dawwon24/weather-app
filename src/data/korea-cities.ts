@@ -5,7 +5,7 @@ export interface Place {
   lon: number;
 }
 
-/** Provincial capitals and metropolitan cities — used for the Korea map and instant search hits. */
+/** Provincial capitals and metropolitan cities — used for instant search hits and the default place. */
 export const KOREA_CITIES: (Place & { short: string })[] = [
   { short: '서울', name: '서울특별시', detail: '대한민국', lat: 37.5665, lon: 126.978 },
   { short: '인천', name: '인천광역시', detail: '대한민국', lat: 37.4563, lon: 126.7052 },

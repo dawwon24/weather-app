@@ -1,10 +1,8 @@
 import './styles.css';
 import { fetchForecast, type ForecastResponse } from './api/forecast';
-import { onPlaceChange, save, setPlace, settings, type Tab } from './state';
-import { CompareView } from './ui/compareView';
-import { renderCurrent, renderDaily } from './ui/currentCard';
-import { ForecastView } from './ui/forecastCharts';
-import { KoreaView } from './ui/koreaMap';
+import { onPlaceChange, save, settings } from './state';
+import { renderCurrent } from './ui/currentCard';
+import { DailyView } from './ui/dailyView';
 import { initSearch } from './ui/search';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
@@ -21,62 +19,17 @@ themeBtn.addEventListener('click', () => {
   settings.theme = settings.theme === 'auto' ? 'light' : settings.theme === 'light' ? 'dark' : 'auto';
   save();
   applyTheme();
-  rerenderCharts();
+  dailyView.render();
 });
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => rerenderCharts());
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => dailyView.render());
 applyTheme();
 
 // ---------- Views ----------
-const search = initSearch($('#search-bar'), {
-  onPickOnMap: () => {
-    selectTab('korea');
-    koreaView.focusMap();
-  },
-});
-const forecastView = new ForecastView($('#forecast-charts'));
-const compareView = new CompareView($('#panel-compare'));
-const koreaView = new KoreaView($('#panel-korea'), (p) => {
-  setPlace({ name: p.name, detail: p.detail, lat: p.lat, lon: p.lon });
-  selectTab('forecast');
-});
-
-let forecast: ForecastResponse | null = null;
-const tabsLoaded = new Set<Tab>();
-
-function rerenderCharts() {
-  forecastView.render();
-  if (tabsLoaded.has('compare')) compareView.load();
-}
-
-// ---------- Tabs ----------
-const tabs = document.querySelectorAll<HTMLButtonElement>('[role=tab]');
-function selectTab(tab: Tab) {
-  settings.tab = tab;
-  save();
-  tabs.forEach((t) => {
-    const on = t.dataset.tab === tab;
-    t.setAttribute('aria-selected', String(on));
-    t.tabIndex = on ? 0 : -1;
-    $(`#panel-${t.dataset.tab}`).hidden = !on;
-  });
-  if (tab === 'compare' && !tabsLoaded.has('compare')) {
-    tabsLoaded.add('compare');
-    compareView.load();
-  }
-  if (tab === 'korea') koreaView.show();
-}
-tabs.forEach((t, i) => {
-  t.addEventListener('click', () => selectTab(t.dataset.tab as Tab));
-  t.addEventListener('keydown', (e) => {
-    const dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-    if (!dir) return;
-    const next = tabs[(i + dir + tabs.length) % tabs.length];
-    next.focus();
-    selectTab(next.dataset.tab as Tab);
-  });
-});
+const search = initSearch($('#search-bar'));
+const dailyView = new DailyView($('#daily'));
 
 // ---------- Data ----------
+let forecast: ForecastResponse | null = null;
 const status = $('#status');
 let loadSeq = 0;
 async function loadPlace() {
@@ -92,15 +45,12 @@ async function loadPlace() {
     forecast = f;
     status.textContent = '';
     renderCurrent($('#current'), place, f);
-    renderDaily($('#daily'), f);
-    forecastView.setData(f);
+    dailyView.setData(f);
   } catch (e) {
     if (my !== loadSeq) return;
     status.textContent = `날씨를 불러오지 못했어요: ${(e as Error).message}`;
     status.classList.add('error');
   }
-  if (tabsLoaded.has('compare')) compareView.load();
-  koreaView.markHere();
 }
 
 onPlaceChange(() => {
@@ -113,5 +63,4 @@ setInterval(() => {
   if (forecast && document.visibilityState === 'visible') loadPlace();
 }, 10 * 60_000);
 
-selectTab(settings.tab);
 loadPlace();

@@ -151,7 +151,7 @@ select:focus-visible {
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 1100; /* above Leaflet's controls (z-index 1000) */
+  z-index: 10;
   background: var(--page);
   padding: 12px 0 10px;
   display: flex;
@@ -234,15 +234,6 @@ select:focus-visible {
   color: var(--text-secondary);
   font-size: 13px;
 }
-.map-hint {
-  margin: 0 0 8px;
-}
-.pick-popup b {
-  display: block;
-}
-.pick-popup button {
-  margin-top: 6px;
-}
 .favorites {
   display: flex;
   gap: 6px;
@@ -250,11 +241,6 @@ select:focus-visible {
 }
 
 /* ---------- Chips & segmented ---------- */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
 .chip {
   display: inline-flex;
   align-items: center;
@@ -286,10 +272,6 @@ select:focus-visible {
   height: 10px;
   border-radius: 3px;
   display: inline-block;
-}
-.swatch.band {
-  background: var(--band);
-  border: 1px dashed var(--neutral-series);
 }
 .segmented {
   display: inline-flex;
@@ -329,19 +311,17 @@ select:focus-visible {
 .status.error {
   color: var(--error);
 }
-.note {
-  margin-top: 16px;
-}
-main > .card,
-[role='tabpanel'] > .card {
+main > .card {
   margin-bottom: 16px;
 }
 
 /* ---------- Current ---------- */
 .now {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) 2fr;
-  gap: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
 }
 .now-place .sub {
   margin: 2px 0 0;
@@ -351,175 +331,91 @@ main > .card,
 .now-temp {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 12px;
 }
 .now-icon {
-  font-size: 44px;
+  font-size: 40px;
 }
 .hero {
-  font-size: 48px;
+  font-size: 44px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 .now-desc {
-  margin: 4px 0;
-  color: var(--text-secondary);
-}
-.now-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-.stat {
-  background: var(--surface-2);
-  border-radius: 10px;
-  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-}
-.stat-label {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.stat-value {
-  font-size: 19px;
-  font-weight: 600;
-}
-.stat-note {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* ---------- Tabs ---------- */
-.tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--border);
-  margin: 4px 0 16px;
-  overflow-x: auto;
-}
-.tabs button {
-  border: 0;
-  background: none;
-  padding: 10px 14px;
-  color: var(--text-secondary);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  white-space: nowrap;
-}
-.tabs button[aria-selected='true'] {
-  color: var(--text-primary);
-  font-weight: 600;
-  border-bottom-color: var(--text-primary);
-}
-
-/* ---------- Daily ---------- */
-.days {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 8px;
-}
-.days li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 2px;
-  padding: 6px 2px;
-}
-.day-name {
   font-size: 13px;
-  color: var(--text-secondary);
-}
-.day-icon {
-  font-size: 24px;
-}
-.day-temp {
-  font-size: 14px;
-  color: var(--text-secondary);
-}
-.day-temp b {
-  color: var(--text-primary);
-}
-.day-meta {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* ---------- Toolbar ---------- */
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 16px;
-}
-.toolbar.column {
-  flex-direction: column;
-  align-items: stretch;
-}
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-.field,
-.field-label {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.field-label {
-  min-width: 64px;
-}
-.field select,
-input[type='date'] {
-  margin-left: 6px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: 13px;
-}
-input[type='date'] {
-  margin-left: 0;
+  line-height: 1.45;
 }
 
 /* ---------- Charts ---------- */
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr));
-  gap: 16px;
+.daily > .card {
+  margin-bottom: 16px;
 }
 .chart-head {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
   margin-bottom: 8px;
 }
-.chart-head .sub {
-  margin: 2px 0 0;
-  font-size: 12px;
+.chart-head h3 {
+  margin-right: auto;
+}
+.summary {
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.summary p {
+  margin: 0 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.summary .sum-today {
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.sum-label {
+  min-width: 140px;
   color: var(--text-muted);
+}
+.delta {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.delta.up::before {
+  content: '▲ ';
+  font-size: 10px;
+  color: var(--series-2);
+}
+.delta.down::before {
+  content: '▼ ';
+  font-size: 10px;
+  color: var(--series-1);
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .chart-wrap {
   position: relative;
   height: 240px;
 }
-.table-wrap,
-.table-scroll {
-  max-height: 280px;
+.table-wrap {
+  max-height: 320px;
   overflow: auto;
-}
-.table-scroll {
-  max-height: none;
 }
 table {
   border-collapse: collapse;
@@ -548,146 +444,27 @@ thead th {
   color: var(--text-muted);
 }
 
-/* ---------- Compare summary ---------- */
-.summary {
-  margin-bottom: 16px;
-}
-.summary h3 {
-  margin-bottom: 2px;
-}
-.summary-table td .val {
-  display: block;
-  color: var(--text-primary);
-}
-.summary-table td .val.strong {
-  font-weight: 600;
-}
-.summary-table td .diff {
-  display: block;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.summary-table td .diff.up::before {
-  content: '▲ ';
-  font-size: 10px;
-}
-.summary-table td .diff.down::before {
-  content: '▼ ';
-  font-size: 10px;
-}
-
-/* ---------- Korea ---------- */
-.korea-layout {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 16px;
-}
-.map-card {
-  padding: 0;
-  overflow: hidden;
-}
-.map {
-  height: 620px;
-  background: var(--surface-2);
-}
-.city-list ol {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
-  max-height: 560px;
-  overflow: auto;
-}
-.city-row {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr auto 64px 72px;
-  gap: 8px;
-  align-items: center;
-  border: 0;
-  background: none;
-  padding: 7px 6px;
-  border-radius: 8px;
-  text-align: left;
-  font-variant-numeric: tabular-nums;
-}
-.city-row:hover {
-  background: var(--surface-2);
-}
-.city-temp {
-  text-align: right;
-  font-weight: 600;
-}
-.city-hum {
-  text-align: right;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.city-pin .pin {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  background: var(--surface-1);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 1px 7px 1px 4px;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-}
-.city-pin:hover {
-  z-index: 1000 !important;
-}
-.pin-name {
-  display: none;
-  color: var(--text-secondary);
-  margin-left: 2px;
-}
-.show-names .pin-name {
-  display: inline;
-}
-.leaflet-container {
-  font-family: var(--font);
-}
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: var(--surface-1);
-  color: var(--text-primary);
-}
-
 footer {
   margin-top: 32px;
   text-align: center;
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 860px) {
-  .now {
-    grid-template-columns: 1fr;
-  }
-  .now-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .days {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  .korea-layout {
-    grid-template-columns: 1fr;
-  }
-  .map {
-    height: 440px;
-  }
-}
 @media (max-width: 480px) {
   .app-header {
     position: static;
   }
   .hero {
-    font-size: 40px;
+    font-size: 38px;
   }
   .chart-wrap {
-    height: 210px;
+    height: 260px;
+  }
+  .now-temp {
+    flex-wrap: wrap;
+  }
+  .sum-label {
+    flex-basis: 100%;
+    margin-top: 2px;
   }
 }

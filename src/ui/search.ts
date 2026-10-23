@@ -3,7 +3,7 @@ import type { Place } from '../data/korea-cities';
 import { samePlace, save, setPlace, settings } from '../state';
 
 /** Header: place search with suggestions, "my location", and favorite chips. */
-export function initSearch(root: HTMLElement, opts: { onPickOnMap: () => void }) {
+export function initSearch(root: HTMLElement) {
   root.innerHTML = `
     <div class="search">
       <input type="search" placeholder="동네·도시 검색 (예: 역삼동, 부산, Tokyo)" autocomplete="off"
@@ -105,20 +105,12 @@ export function initSearch(root: HTMLElement, opts: { onPickOnMap: () => void })
   const locateMsg = root.querySelector<HTMLElement>('.locate-msg')!;
   const showLocateError = (text: string) => {
     locateMsg.replaceChildren(text + ' ');
-    const pick = document.createElement('button');
-    pick.type = 'button';
-    pick.className = 'ghost small';
-    pick.textContent = '🗺️ 지도에서 선택';
-    pick.addEventListener('click', () => {
-      locateMsg.hidden = true;
-      opts.onPickOnMap();
-    });
     const dismiss = document.createElement('button');
     dismiss.type = 'button';
     dismiss.className = 'ghost small';
     dismiss.textContent = '닫기';
     dismiss.addEventListener('click', () => (locateMsg.hidden = true));
-    locateMsg.append(pick, ' ', dismiss);
+    locateMsg.append(dismiss);
     locateMsg.hidden = false;
   };
   const resetLocate = () => {
@@ -144,7 +136,7 @@ export function initSearch(root: HTMLElement, opts: { onPickOnMap: () => void })
         resetLocate();
         // Desktop browsers without GPS estimate position from Wi-Fi/IP and can be kilometers off.
         if (pos.coords.accuracy > 5000) {
-          showLocateError(`위치 정확도가 낮아요(오차 약 ${Math.round(pos.coords.accuracy / 1000)}km). 위치가 다르면 지도에서 직접 골라 주세요.`);
+          showLocateError(`위치 정확도가 낮아요(오차 약 ${Math.round(pos.coords.accuracy / 1000)}km). 위치가 다르면 검색으로 찾아 주세요.`);
         }
         setPlace(p);
       },

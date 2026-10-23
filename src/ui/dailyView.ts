@@ -156,7 +156,7 @@ export class DailyView {
     this.renderHumidity(w);
   }
 
-  /** Headline numbers: today vs the same weekday last week, and vs normal. */
+  /** Headline numbers for today. */
   private renderSummary() {
     const f = this.f!;
     const d = f.daily;
@@ -164,24 +164,7 @@ export class DailyView {
     if (ti < 0) ti = PAST_DAYS;
     const hi = d.temperature_2m_max[ti];
     const lo = d.temperature_2m_min[ti];
-
-    const delta = (label: string, a: number | null | undefined, b: number | null | undefined) => {
-      if (a == null || b == null) return `<span class="delta">${label} –</span>`;
-      const diff = Math.round(a - b);
-      if (diff === 0) return `<span class="delta">${label} 비슷</span>`;
-      return `<span class="delta ${diff > 0 ? 'up' : 'down'}">${label} ${Math.abs(diff)}℃ ${diff > 0 ? '높음' : '낮음'}</span>`;
-    };
-    const lw = ti - 7;
-    const rows = [
-      `<p class="sum-today"><b>오늘</b> 최고 <b>${fmt(hi, 0, '℃')}</b> · 최저 <b>${fmt(lo, 0, '℃')}</b></p>`,
-      lw >= 0
-        ? `<p><span class="sum-label">지난주 ${wd(d.time[lw])}요일(${md(d.time[lw])})보다</span>${delta('최고', hi, d.temperature_2m_max[lw])}${delta('최저', lo, d.temperature_2m_min[lw])}</p>`
-        : '',
-      this.normals
-        ? `<p><span class="sum-label">평년보다</span>${delta('최고', hi, this.normals.max[ti])}${delta('최저', lo, this.normals.min[ti])}</p>`
-        : '',
-    ];
-    this.summary.innerHTML = rows.join('');
+    this.summary.innerHTML = `<p class="sum-today"><b>오늘</b> 최고 <b>${fmt(hi, 0, '℃')}</b> · 최저 <b>${fmt(lo, 0, '℃')}</b></p>`;
   }
 
   private renderLegend(w: Span) {
@@ -218,8 +201,13 @@ export class DailyView {
 
     const all = [...w.max, ...w.min, ...(w.normMax ?? []), ...(w.normMin ?? [])].filter((v): v is number => v != null);
     // Room for the value labels, snapped to 5℃ so the axis bounds are round ticks.
-    const yMin = all.length ? Math.floor((Math.min(...all) - 2) / 5) * 5 : undefined;
-    const yMax = all.length ? Math.ceil((Math.max(...all) + 2) / 5) * 5 : undefined;
+    // Wide spans step by 10℃ instead — otherwise Chart.js thins the ticks to odd values.
+    let yMin = all.length ? Math.floor((Math.min(...all) - 2) / 5) * 5 : undefined;
+    let yMax = all.length ? Math.ceil((Math.max(...all) + 2) / 5) * 5 : undefined;
+    if (yMin != null && yMax != null && yMax - yMin > 30) {
+      yMin = Math.floor(yMin / 10) * 10;
+      yMax = Math.ceil(yMax / 10) * 10;
+    }
 
     // Max above each bar, min below it — only while bars are wide enough to hold a number.
     const valueLabels: Plugin = {
@@ -301,7 +289,7 @@ export class DailyView {
             max: yMax,
             grid: { color: c.grid },
             border: { display: false },
-            ticks: { color: c.muted, font: { size: 11 }, stepSize: 5, maxTicksLimit: 9, callback: (v) => `${v}℃` },
+            ticks: { color: c.muted, font: { size: 11 }, stepSize: yMax != null && yMin != null && yMax - yMin > 30 ? 10 : 5, callback: (v) => `${v}℃` },
           },
         },
         plugins: {

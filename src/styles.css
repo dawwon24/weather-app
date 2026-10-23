@@ -378,24 +378,6 @@ main > .card {
   font-size: 15px;
   color: var(--text-primary);
 }
-.sum-label {
-  min-width: 140px;
-  color: var(--text-muted);
-}
-.delta {
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-}
-.delta.up::before {
-  content: '▲ ';
-  font-size: 10px;
-  color: var(--series-2);
-}
-.delta.down::before {
-  content: '▼ ';
-  font-size: 10px;
-  color: var(--series-1);
-}
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -462,9 +444,5 @@ footer {
   }
   .now-temp {
     flex-wrap: wrap;
-  }
-  .sum-label {
-    flex-basis: 100%;
-    margin-top: 2px;
   }
 }

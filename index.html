@@ -3,8 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="기온·습도 예보 그래프와 과거 연도 비교가 가능한 날씨 대시보드" />
+    <meta name="description" content="지난 날과 예보 기온을 하루 단위로 한 그래프에서 보는 날씨 앱" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛅</text></svg>" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#f9f9f7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
     <title>날씨</title>
   </head>
   <body>
@@ -21,18 +25,7 @@
       <p id="status" class="status" role="status" aria-live="polite"></p>
       <section id="current" class="card current" aria-label="현재 날씨"></section>
 
-      <nav class="tabs" role="tablist" aria-label="보기 선택">
-        <button type="button" role="tab" id="tab-forecast" data-tab="forecast" aria-controls="panel-forecast">예보 그래프</button>
-        <button type="button" role="tab" id="tab-compare" data-tab="compare" aria-controls="panel-compare">과거와 비교</button>
-        <button type="button" role="tab" id="tab-korea" data-tab="korea" aria-controls="panel-korea">전국 날씨</button>
-      </nav>
-
-      <section id="panel-forecast" role="tabpanel" aria-labelledby="tab-forecast">
-        <section id="daily" class="card daily" aria-label="주간 예보"></section>
-        <div id="forecast-charts"></div>
-      </section>
-      <section id="panel-compare" role="tabpanel" aria-labelledby="tab-compare" hidden></section>
-      <section id="panel-korea" role="tabpanel" aria-labelledby="tab-korea" hidden></section>
+      <div id="daily" class="daily"></div>
     </main>
 
     <footer class="muted small">

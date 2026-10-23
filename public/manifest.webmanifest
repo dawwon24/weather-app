@@ -1,0 +1,16 @@
+{
+  "name": "날씨",
+  "short_name": "날씨",
+  "description": "지난 날과 예보 기온을 하루 단위로 한 그래프에서 보는 날씨 앱",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f9f9f7",
+  "theme_color": "#f9f9f7",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

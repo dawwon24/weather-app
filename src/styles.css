@@ -180,9 +180,9 @@ select:focus-visible {
   background: transparent;
   border: 0;
   border-radius: 999px;
-  padding: 4px 8px;
-  font-size: 17px;
-  line-height: 1;
+  padding: 6px;
+  display: inline-flex;
+  color: var(--text-secondary);
 }
 .icon-btn:hover,
 .icon-btn[aria-expanded='true'] {

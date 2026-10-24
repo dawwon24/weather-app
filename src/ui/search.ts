@@ -2,7 +2,7 @@ import { localMatches, reverseGeocode, searchPlaces } from '../api/geocode';
 import type { Place } from '../data/korea-cities';
 import { samePlace, save, setPlace, settings } from '../state';
 
-/** Header: place search (opened by the 🔍 toggle) with suggestions, favorite chips, and "my location". */
+/** Header: place search (opened by the magnifier toggle) with suggestions, favorite chips, and "my location". */
 export function initSearch(root: HTMLElement, toggle: HTMLButtonElement) {
   root.innerHTML = `
     <div class="search" id="search-box" hidden>
@@ -118,7 +118,7 @@ export function initSearch(root: HTMLElement, toggle: HTMLButtonElement) {
     }
   });
   input.addEventListener('blur', (e) => {
-    // Leaving an empty box folds it back to the 🔍 button; the toggle handles its own click.
+    // Leaving an empty box folds it back to the magnifier button; the toggle handles its own click.
     if (e.relatedTarget === toggle) return;
     setTimeout(() => (input.value.trim() ? close() : setOpen(false)), 100);
   });

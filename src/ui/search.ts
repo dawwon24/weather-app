@@ -2,23 +2,27 @@ import { localMatches, reverseGeocode, searchPlaces } from '../api/geocode';
 import type { Place } from '../data/korea-cities';
 import { samePlace, save, setPlace, settings } from '../state';
 
-/** Header: place search (opened by the magnifier toggle) with suggestions, favorite chips, and "my location". */
-export function initSearch(root: HTMLElement, toggle: HTMLButtonElement) {
+/**
+ * Header: place search (opened by the magnifier toggle) with suggestions and favorite chips in `root`;
+ * the favorite star and "my location" go into the title row's `actions` slot.
+ */
+export function initSearch(root: HTMLElement, toggle: HTMLButtonElement, actions: HTMLElement) {
   root.innerHTML = `
     <div class="search" id="search-box" hidden>
       <input type="search" placeholder="동네·도시 검색 (예: 역삼동, 부산, Tokyo)" autocomplete="off"
         role="combobox" aria-expanded="false" aria-controls="search-results" aria-autocomplete="list" aria-label="지역 검색">
       <ul id="search-results" role="listbox" hidden></ul>
     </div>
-    <div class="place-actions">
-      <div class="favorites" aria-label="즐겨찾기"></div>
-      <button type="button" class="ghost" data-locate>📍 내 위치</button>
-    </div>
+    <div class="favorites" aria-label="즐겨찾기"></div>
     <p class="locate-msg" role="alert" hidden></p>`;
 
   const input = root.querySelector('input')!;
   const list = root.querySelector('ul')!;
-  const locate = root.querySelector<HTMLButtonElement>('[data-locate]')!;
+  actions.innerHTML = `
+    <button type="button" class="ghost round star"></button>
+    <button type="button" class="ghost" data-locate>📍 내 위치</button>`;
+  const star = actions.querySelector<HTMLButtonElement>('.star')!;
+  const locate = actions.querySelector<HTMLButtonElement>('[data-locate]')!;
   const favBox = root.querySelector<HTMLElement>('.favorites')!;
   const box = root.querySelector<HTMLElement>('.search')!;
 
@@ -175,24 +179,24 @@ export function initSearch(root: HTMLElement, toggle: HTMLButtonElement) {
     );
   });
 
+  star.addEventListener('click', () => {
+    const cur = settings.place;
+    if (settings.favorites.some((f) => samePlace(f, cur))) {
+      settings.favorites = settings.favorites.filter((f) => !samePlace(f, cur));
+    } else settings.favorites = [...settings.favorites, cur].slice(-8);
+    save();
+    renderFavorites();
+  });
+
   const renderFavorites = () => {
     favBox.replaceChildren();
     const cur = settings.place;
     const isFav = settings.favorites.some((f) => samePlace(f, cur));
 
-    const star = document.createElement('button');
-    star.type = 'button';
-    star.className = 'chip star';
     star.setAttribute('aria-pressed', String(isFav));
-    star.textContent = isFav ? '★ 즐겨찾기됨' : '☆ 즐겨찾기';
+    star.textContent = isFav ? '★' : '☆';
     star.title = isFav ? '즐겨찾기에서 빼기' : '현재 지역을 즐겨찾기에 추가';
-    star.addEventListener('click', () => {
-      if (isFav) settings.favorites = settings.favorites.filter((f) => !samePlace(f, cur));
-      else settings.favorites = [...settings.favorites, cur].slice(-8);
-      save();
-      renderFavorites();
-    });
-    favBox.append(star);
+    star.setAttribute('aria-label', star.title);
 
     for (const f of settings.favorites) {
       const b = document.createElement('button');
@@ -204,6 +208,7 @@ export function initSearch(root: HTMLElement, toggle: HTMLButtonElement) {
       b.addEventListener('click', () => setPlace(f));
       favBox.append(b);
     }
+    favBox.hidden = !settings.favorites.length;
   };
 
   return { renderFavorites };

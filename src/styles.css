@@ -167,8 +167,16 @@ select:focus-visible {
 .brand h1 {
   font-size: 20px;
 }
-.brand #theme-toggle {
-  margin-left: auto;
+.ghost.round {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.star[aria-pressed='true'] {
+  color: #e0a100;
 }
 .search-bar {
   display: flex;
@@ -199,10 +207,12 @@ select:focus-visible {
 .place-actions {
   margin-left: auto;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  font-size: 15px;
+}
+.search-bar:not(:has(> :not([hidden]))) {
+  display: none;
 }
 .search input {
   width: 100%;
@@ -261,7 +271,9 @@ select:focus-visible {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  justify-content: flex-end;
+}
+.favorites[hidden] {
+  display: none;
 }
 
 /* ---------- Chips & segmented ---------- */
@@ -287,9 +299,6 @@ select:focus-visible {
 .chip[aria-pressed='true']::before {
   content: '✓';
   font-size: 11px;
-}
-.chip.star[aria-pressed='true']::before {
-  content: none;
 }
 .swatch {
   width: 10px;

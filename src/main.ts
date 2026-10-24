@@ -13,7 +13,10 @@ function applyTheme() {
   const t = settings.theme;
   if (t === 'auto') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', t);
-  themeBtn.textContent = t === 'auto' ? '🌓 자동' : t === 'dark' ? '🌙 다크' : '☀️ 라이트';
+  themeBtn.textContent = t === 'auto' ? '🌓' : t === 'dark' ? '🌙' : '☀️';
+  const label = `테마: ${t === 'auto' ? '자동' : t === 'dark' ? '다크' : '라이트'} (눌러서 바꾸기)`;
+  themeBtn.title = label;
+  themeBtn.setAttribute('aria-label', label);
 }
 themeBtn.addEventListener('click', () => {
   settings.theme = settings.theme === 'auto' ? 'light' : settings.theme === 'light' ? 'dark' : 'auto';
@@ -25,7 +28,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => dail
 applyTheme();
 
 // ---------- Views ----------
-const search = initSearch($('#search-bar'), $<HTMLButtonElement>('#search-toggle'));
+const search = initSearch($('#search-bar'), $<HTMLButtonElement>('#search-toggle'), $('#header-actions'));
 const dailyView = new DailyView($('#daily'));
 
 // ---------- Data ----------

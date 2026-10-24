@@ -176,10 +176,33 @@ select:focus-visible {
   gap: 8px;
   align-items: center;
 }
+.icon-btn {
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 17px;
+  line-height: 1;
+}
+.icon-btn:hover,
+.icon-btn[aria-expanded='true'] {
+  background: var(--surface-2);
+}
 .search {
   position: relative;
-  flex: 1 1 280px;
+  flex: 1 1 100%;
   max-width: 460px;
+}
+.search[hidden] {
+  display: none;
+}
+.place-actions {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
 }
 .search input {
   width: 100%;
@@ -238,6 +261,7 @@ select:focus-visible {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* ---------- Chips & segmented ---------- */

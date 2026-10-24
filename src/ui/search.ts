@@ -2,22 +2,25 @@ import { localMatches, reverseGeocode, searchPlaces } from '../api/geocode';
 import type { Place } from '../data/korea-cities';
 import { samePlace, save, setPlace, settings } from '../state';
 
-/** Header: place search with suggestions, "my location", and favorite chips. */
-export function initSearch(root: HTMLElement) {
+/** Header: place search (opened by the 🔍 toggle) with suggestions, favorite chips, and "my location". */
+export function initSearch(root: HTMLElement, toggle: HTMLButtonElement) {
   root.innerHTML = `
-    <div class="search">
+    <div class="search" id="search-box" hidden>
       <input type="search" placeholder="동네·도시 검색 (예: 역삼동, 부산, Tokyo)" autocomplete="off"
         role="combobox" aria-expanded="false" aria-controls="search-results" aria-autocomplete="list" aria-label="지역 검색">
       <ul id="search-results" role="listbox" hidden></ul>
     </div>
-    <button type="button" class="ghost" data-locate>📍 내 위치</button>
-    <div class="favorites" aria-label="즐겨찾기"></div>
+    <div class="place-actions">
+      <div class="favorites" aria-label="즐겨찾기"></div>
+      <button type="button" class="ghost" data-locate>📍 내 위치</button>
+    </div>
     <p class="locate-msg" role="alert" hidden></p>`;
 
   const input = root.querySelector('input')!;
   const list = root.querySelector('ul')!;
   const locate = root.querySelector<HTMLButtonElement>('[data-locate]')!;
   const favBox = root.querySelector<HTMLElement>('.favorites')!;
+  const box = root.querySelector<HTMLElement>('.search')!;
 
   let results: Place[] = [];
   let active = -1;
@@ -57,9 +60,19 @@ export function initSearch(root: HTMLElement) {
     input.setAttribute('aria-expanded', String(!list.hidden));
   };
 
+  const setOpen = (open: boolean) => {
+    box.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    if (open) input.focus();
+    else {
+      input.value = '';
+      close();
+    }
+  };
+  toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+
   const choose = (p: Place) => {
-    input.value = '';
-    close();
+    setOpen(false);
     setPlace(p);
   };
 
@@ -97,10 +110,18 @@ export function initSearch(root: HTMLElement) {
       if (active >= 0) choose(results[active]);
       else if (results.length) choose(results[0]);
     } else if (e.key === 'Escape') {
-      close();
+      if (!list.hidden) close();
+      else {
+        setOpen(false);
+        toggle.focus();
+      }
     }
   });
-  input.addEventListener('blur', () => setTimeout(close, 100));
+  input.addEventListener('blur', (e) => {
+    // Leaving an empty box folds it back to the 🔍 button; the toggle handles its own click.
+    if (e.relatedTarget === toggle) return;
+    setTimeout(() => (input.value.trim() ? close() : setOpen(false)), 100);
+  });
 
   const locateMsg = root.querySelector<HTMLElement>('.locate-msg')!;
   const showLocateError = (text: string) => {

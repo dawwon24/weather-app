@@ -25,7 +25,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => dail
 applyTheme();
 
 // ---------- Views ----------
-const search = initSearch($('#search-bar'));
+const search = initSearch($('#search-bar'), $<HTMLButtonElement>('#search-toggle'));
 const dailyView = new DailyView($('#daily'));
 
 // ---------- Data ----------
